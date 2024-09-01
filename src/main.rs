@@ -1,3 +1,4 @@
+use hex::encode;
 use serde_json;
 use std::env;
 
@@ -13,9 +14,15 @@ fn decode_bencoded_value(encoded_value: &str) -> serde_json::Value {
         } else {
             panic!("Invalid length: {}", len);
         }
-    } else {
-        panic!("Unhandled encoded value: {}", encoded_value)
+    } else if encoded_value.starts_with("i") && encoded_value.ends_with("e") {
+        let number = &encoded_value[1..encoded_value.len() - 1];
+        if let Ok(number) = number.parse::<i64>() {
+            return serde_json::Value::Number(serde_json::Number::from(number));
+        } else {
+            panic!("Invalid number: {}", number);
+        }
     }
+    panic!("Unhandled encoded value: {}", encoded_value)
 }
 
 // Usage: your_bittorrent.sh decode "<encoded_value>"
